@@ -1,0 +1,208 @@
+<html>
+
+<head>
+	<link rel='stylesheet' href='../stylesheets/public.css' />
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type=""></script>
+	<script src="../javascripts/waypoints.min.js"></script>
+	<script type="text/javascript" src="../javascripts/doT.js"></script>
+	<script src="../javascripts/jquery.timeago.js" type="text/javascript"></script>
+
+
+	<script type="text/javascript">
+		var last_requested_term;
+		var running_request = false;
+		var rpp = 22;
+		var current_page = 1;
+		var more_results = true;
+		var resultText;
+		
+		// our dot template function
+		var tempFn = doT.template("{{ for(var i=0; i < it.tweet_objs.length; i++) {	var tweet_obj = it.tweet_objs[i];	var text = tweet_linkify(tweet_obj.text); }} <div class='tweet-box' id='tweet-{{=tweet_obj.id}}'>	<div class='tweet-left'><img src='{{=tweet_obj.profile_image_url}}' width='100%'/></div>	<div class='tweet-right'> <div class='name'><span class='user'>{{=tweet_obj.from_user}}</span> <span class='username'>@{{=tweet_obj.from_user_name}}</span></div> <div class='text'>{{=text}}</div> <time class='timeago' title='{{=tweet_obj.created_at}}'>{{=jQuery.timeago(tweet_obj.created_at)}}</time> </div>	</div> {{ } }}");
+		
+		function tweet_linkify(text){
+			// linkifies @ and urls
+			if (text.search(/(https?:\/\/[-\w\.]+:?\/[\w\/_\.]*(\?\S+)?)/) > -1) {
+				text = text.replace(/(https?:\/\/[-\w\.]+:?\/[\w\/_\.]*(\?\S+)?)/, "<a href='$1'>$1</a>")
+			}
+			if (text.search(/@\w+/) > -1) {
+				text = text.replace(/(@)(\w+)/g, "<span class='tweet-at'>$1</span><a href='http://twitter.com/$2'>$2</a>");
+			}
+			return text;
+		}
+		
+		function search_callback(data) {
+			running_request = false;	// set this to false to allow next instant search request
+			$('#search-activity').animate({"opacity": 0}, 400);	// hide activity indicators
+			$('.activity').animate({"opacity": 0}, 400);
+			var results = data.results;	// get results from twitter's returned data
+			var uniq_results = 0;
+			console.log(data);
+			if (last_requested_term != $('#search-input').val().trim()) {
+				// in case user types too fast for search to catch most recent input, call search again
+				search($('#search-input').val().trim(), 1);
+			}
+			else{
+				if (results.length == 0) {
+					more_results = false;
+				}
+				else{
+					if (current_page == 1) { 
+						// rendering the first page, so empty the results div first
+						$('#search-results-list').empty();
+					}
+					var uniq_tweet_objs = [];
+					for (var index in results) {
+						// loop through results hash and get tweets we haven't shown before
+						var tweet_obj = results[index];
+						if ($('#tweet-'+tweet_obj.id).length == 0){
+							uniq_tweet_objs.push(tweet_obj);
+							uniq_results++;
+						}
+					}
+
+					// call dot template function, passing in tweets we haven't shown before
+					resultText = tempFn({ tweet_objs: uniq_tweet_objs });
+					// append results to result list
+					$('#search-results-list').append(resultText);
+					// refresh waypoint
+					$.waypoints('refresh');
+				}
+
+				if (uniq_results == 0) {
+					more_results = false;
+				}
+			}
+		}
+		
+		var search = function(search_term, page) {
+			var esc_search_term = escape(search_term);
+			var eng_only = $('#filter-english:checked').length > 0;
+			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&page="+page+"&result_type=mixed&rpp="+rpp;
+			request_url += (eng_only == true ? "&lang=en" : "");
+			
+			request = $.ajax({
+				url: request_url,
+				beforeSend: function( xhr ) {
+					if (search_term.length < 2 || running_request) {
+						return false;
+					}
+					else{
+						// we can search for this term
+						$('#search-activity').css("opacity", 1);
+						running_request = true;
+						last_requested_term = search_term;
+					}
+				},
+				dataType: "jsonp",
+				jsonpCallback: "search_callback",
+				type: "GET"
+			});
+		}
+		
+		var initWaypoint = function(){
+			$('.load-more').waypoint(function(event, direction){
+				if (direction === 'down' && $('#search-results-list').children().length != 0 && more_results && $('#search-input').val().trim().length > 1) {
+					$(this).find('.activity').css("opacity", 1);
+					// do this on the way down
+					current_page++;
+					var search_term = $('#search-input').val().trim();
+					search(search_term, current_page);
+				}
+			}, {
+				offset: '100%'
+			});
+		}
+		
+		$().ready(function() {
+			$('body').live("click", function(e){
+				var target_id = e.target.id;
+				console.log(target_id);
+				if (target_id != "dropdown-icon" && $(e.target).closest('#search-dropdown').length == 0) {
+					$('#search-dropdown').slideUp(100);
+					$('#dropdown-icon').removeClass("active");
+				}
+			});
+			
+			$('#search-input').live("keyup", function(){
+				var search_term = $(this).val().trim();
+				if (search_term != last_requested_term){
+					current_page = 1;
+					more_results = true;
+					search(search_term, current_page);
+				}
+			});
+			
+			
+			$('.options-list li').live("click", function(e){
+				console.log(e.target);
+				var checked = $(this).find('input:checkbox').attr("checked");
+				if (checked) {
+					$(this).find('input:checkbox').removeAttr("checked");
+				}
+				else {
+					$(this).find('input:checkbox').attr("checked", "checked");
+				}
+				
+				var search_term = $('#search-input').val().trim();
+				current_page = 1;
+				more_results = true;
+				search(search_term, current_page);
+				
+			});
+			jQuery("time.timeago").timeago();
+		  	
+			
+			$('#dropdown-icon').live("click", function(e){
+				$('#search-dropdown').slideToggle(100);
+				$(this).toggleClass("active");
+			});
+			initWaypoint();
+		});
+	
+	</script>
+	
+</head>
+
+<body>
+	
+	<div id="search-wrapper">
+		<div id="search-heading">Search Tweets!</div>
+		
+		<div id="search-main">
+			<span id="search-icon">
+				<img src="../images/search.png"/>
+			</span>
+			<span id="dropdown-icon">
+				&#9660;
+			</span>
+			<input type="text" id="search-input" placeholder="Start typing to search..."/>
+
+			<div id="search-activity">
+				<img src="../images/activity.gif"/>
+			</div>
+			
+			<div id="search-dropdown">
+				<div class="heading">Options:</div>
+				<div class="options-list">
+					<ul>
+						<li><input type="checkbox" id="filter-english"> English </input></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		
+		<div id="search-results">
+			<div id="search-results-list"></div>
+			<div class="load-more">
+				<div class="activity">
+					<img src="../images/activity.gif"/>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+
+</body>
+
+</html>
