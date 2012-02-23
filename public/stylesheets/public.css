@@ -55,7 +55,7 @@ a:hover {
 #search-input {
 	display: inline-block;
 	margin: auto;
-	margin-left: 15px;
+/*	margin: 15px;*/
 	width: 70%;
 	padding: 6px 25px 6px 25px;
 	font-size: 12px;
@@ -85,7 +85,7 @@ a:hover {
 }
 
 #search-activity {
-	margin-left: 10px;
+	margin: 0 10px;
 	opacity: 0;
 	display: inline-block;
 }
@@ -127,7 +127,12 @@ a:hover {
 	vertical-align: top;
 	text-align: left;
 	margin-right: 10px;
-	
+}
+
+.tweet-box .tweet-left img{
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 
 .tweet-box .name {
@@ -165,7 +170,7 @@ a:hover {
 
 #search-icon {
 	position: relative;
-	left: 12.7%;
+	left: 9.7%;
 	top: 2px;
 }
 
@@ -185,7 +190,7 @@ a:hover {
 	font-size: 8px;
 	color: #cccccc;
 	position: relative;
-	left: 71%;
+	left: 68%;
 	cursor: pointer;
 	border-left: 1px solid #cccccc;
 	padding-left: 7px;
@@ -200,7 +205,7 @@ a:hover {
 	width: 30%;
 	z-index: 999;
 	position: absolute;
-	left: 56%;
+	left: 55%;
 	border: 1px solid #cccccc;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -221,16 +226,20 @@ a:hover {
 
 #search-dropdown .options-list li{
 /*	border: 1px solid black;*/
-	padding: 7px 0 7px 15px;
 	border-top: 1px solid rgba(0,0,0,0);
 	border-bottom: 1px solid rgba(0,0,0,0);
 }
+
+#search-dropdown .options-list label{
+	cursor: pointer;
+	padding: 7px 0 7px 20px;
+}
+
 
 #search-dropdown .options-list li:hover {
 	background-color: #fffff0;
 	border-top: 1px solid #cccccc;
 	border-bottom: 1px solid #cccccc;
-	cursor: pointer;
 }
 
 ul {

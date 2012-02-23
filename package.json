@@ -1,15 +1,13 @@
 {
-  "name": "application-name",
-  "version": "0.0.1",
-  "private": true,
-  "dependencies": {
-    "express": "2.5.2",
-    "jade": ">= 0.0.1",
-    "dot": "0.1.x",
-	"ejs": "",
-  },
-  "subdomain": "twitter_instant",
+  "name": "twitter_instant",
   "scripts": {
     "start": "app.js"
+  },
+  "version": "0.0.0-2",
+  "subdomain": "twitter_instant",
+  "dependencies": {
+    "dot": "0.1.x",
+    "ejs": "",
+    "express": "2.5.x"
   }
 }

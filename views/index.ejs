@@ -18,7 +18,7 @@
 		var resultText;
 		
 		// our dot template function
-		var tempFn = doT.template("{{ for(var i=0; i < it.tweet_objs.length; i++) {	var tweet_obj = it.tweet_objs[i];	var text = tweet_linkify(tweet_obj.text); }} <div class='tweet-box' id='tweet-{{=tweet_obj.id}}'>	<div class='tweet-left'><img src='{{=tweet_obj.profile_image_url}}' width='100%'/></div>	<div class='tweet-right'> <div class='name'><span class='user'>{{=tweet_obj.from_user}}</span> <span class='username'>@{{=tweet_obj.from_user_name}}</span></div> <div class='text'>{{=text}}</div> <time class='timeago' title='{{=tweet_obj.created_at}}'>{{=jQuery.timeago(tweet_obj.created_at)}}</time> </div>	</div> {{ } }}");
+		var tempFn = doT.template("{{ for(var i=0; i < it.tweet_objs.length; i++) {	var tweet_obj = it.tweet_objs[i];	var text = tweet_linkify(tweet_obj.text); }} <div class='tweet-box' id='tweet-{{=tweet_obj.id}}'>	<div class='tweet-left'><img src='{{=tweet_obj.profile_image_url}}' width='100%'/></div>	<div class='tweet-right'> <div class='name'><span class='user'>{{=tweet_obj.from_user_name}}</span> <span class='username'>@{{=tweet_obj.from_user}}</span></div> <div class='text'>{{=text}}</div> <time class='timeago' title='{{=tweet_obj.created_at}}'>{{=jQuery.timeago(tweet_obj.created_at)}}</time> </div>	</div> {{ } }}");
 		
 		function tweet_linkify(text){
 			// linkifies @ and urls
@@ -53,7 +53,7 @@
 					}
 					var uniq_tweet_objs = [];
 					for (var index in results) {
-						// loop through results hash and get tweets we haven't shown before
+						// loop through results hash and get tweets we haven't shown before and match the filter
 						var tweet_obj = results[index];
 						if ($('#tweet-'+tweet_obj.id).length == 0){
 							uniq_tweet_objs.push(tweet_obj);
@@ -78,8 +78,12 @@
 		var search = function(search_term, page) {
 			var esc_search_term = escape(search_term);
 			var eng_only = $('#filter-english:checked').length > 0;
-			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&page="+page+"&result_type=mixed&rpp="+rpp;
+			var result_type = $('input:radio:checked').val();
+
+			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&result_type="+result_type+"&page="+page+"&rpp="+rpp;
 			request_url += (eng_only == true ? "&lang=en" : "");
+			console.log("the requested url is "+request_url);
+
 			
 			request = $.ajax({
 				url: request_url,
@@ -135,21 +139,14 @@
 			
 			
 			$('.options-list li').live("click", function(e){
-				console.log(e.target);
-				var checked = $(this).find('input:checkbox').attr("checked");
-				if (checked) {
-					$(this).find('input:checkbox').removeAttr("checked");
-				}
-				else {
-					$(this).find('input:checkbox').attr("checked", "checked");
-				}
-				
 				var search_term = $('#search-input').val().trim();
 				current_page = 1;
 				more_results = true;
-				search(search_term, current_page);
-				
+				setTimeout(function(){
+					search(search_term, current_page);
+				}, 50);
 			});
+			
 			jQuery("time.timeago").timeago();
 		  	
 			
@@ -186,7 +183,28 @@
 				<div class="heading">Options:</div>
 				<div class="options-list">
 					<ul>
-						<li><input type="checkbox" id="filter-english"> English </input></li>
+						
+						<li>
+							<label style="display:block">
+								<input type="checkbox" id="filter-english"/> English
+							</label>
+						</li>
+						<hr style="width: 80%"/>
+						<li>
+							<label style="display:block">
+								<input type="radio" name="filter-result-type" value="mixed" checked="checked"/> All 
+							</label>
+						</li>
+						<li>
+							<label style="display:block">
+								<input type="radio" name="filter-result-type" value="popular"/> Popular 
+							</label>
+						</li>
+						<li>
+							<label style="display:block">
+								<input type="radio" name="filter-result-type" value="recent"/> Recent 
+							</label>
+						</li>
 					</ul>
 				</div>
 			</div>
