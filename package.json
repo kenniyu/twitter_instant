@@ -3,7 +3,7 @@
   "scripts": {
     "start": "app.js"
   },
-  "version": "0.0.0-2",
+  "version": "0.0.0-3",
   "subdomain": "twitter_instant",
   "dependencies": {
     "dot": "0.1.x",

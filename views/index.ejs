@@ -104,7 +104,7 @@
 			});
 		}
 		
-		var initWaypoint = function(){
+		var initWaypoints = function(){
 			$('.load-more').waypoint(function(event, direction){
 				if (direction === 'down' && $('#search-results-list').children().length != 0 && more_results && $('#search-input').val().trim().length > 1) {
 					$(this).find('.activity').css("opacity", 1);
@@ -116,6 +116,7 @@
 			}, {
 				offset: '100%'
 			});
+			
 		}
 		
 		$().ready(function() {
@@ -126,6 +127,22 @@
 					$('#search-dropdown').slideUp(100);
 					$('#dropdown-icon').removeClass("active");
 				}
+			});
+			
+			$(window).scroll(function(){
+				if ($(window).scrollTop() > 2000){	
+					if ($('#back-to-top').is(":hidden")) {
+						$('#back-to-top').slideDown();
+						// console.log("should show it");
+					}
+				}
+				else {
+					$('#back-to-top').slideUp();
+				}
+			});
+			
+			$('#back-to-top').live("click", function(e){
+				$('body,html').animate({ scrollTop: 0 }, 800);
 			});
 			
 			$('#search-input').live("keyup", function(){
@@ -147,6 +164,7 @@
 				}, 50);
 			});
 			
+			// why doesn't this auto update the time tags... :(
 			jQuery("time.timeago").timeago();
 		  	
 			
@@ -154,7 +172,7 @@
 				$('#search-dropdown').slideToggle(100);
 				$(this).toggleClass("active");
 			});
-			initWaypoint();
+			initWaypoints();
 		});
 	
 	</script>
@@ -218,6 +236,8 @@
 				</div>
 			</div>
 		</div>
+		
+		<div id="back-to-top">^</div>
 		
 	</div>
 
