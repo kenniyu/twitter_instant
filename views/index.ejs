@@ -37,7 +37,7 @@
 			$('.activity').animate({"opacity": 0}, 400);
 			var results = data.results;	// get results from twitter's returned data
 			var uniq_results = 0;
-			console.log(data);
+			
 			if (last_requested_term != $('#search-input').val().trim()) {
 				// in case user types too fast for search to catch most recent input, call search again
 				search($('#search-input').val().trim(), 1);
@@ -82,7 +82,6 @@
 
 			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&result_type="+result_type+"&page="+page+"&rpp="+rpp;
 			request_url += (eng_only == true ? "&lang=en" : "");
-			console.log("the requested url is "+request_url);
 
 			
 			request = $.ajax({
@@ -122,7 +121,6 @@
 		$().ready(function() {
 			$('body').live("click", function(e){
 				var target_id = e.target.id;
-				console.log(target_id);
 				if (target_id != "dropdown-icon" && $(e.target).closest('#search-dropdown').length == 0) {
 					$('#search-dropdown').slideUp(100);
 					$('#dropdown-icon').removeClass("active");
@@ -133,7 +131,6 @@
 				if ($(window).scrollTop() > 2000){	
 					if ($('#back-to-top').is(":hidden")) {
 						$('#back-to-top').slideDown();
-						// console.log("should show it");
 					}
 				}
 				else {
