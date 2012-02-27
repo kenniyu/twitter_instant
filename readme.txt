@@ -1,9 +1,10 @@
-I decided to turn this little project into a web app with just one page.  I wasn't sure when to query the search (user presses a search button?) so I made it like Google's instant-search :) 
-
 The relevant view file is index.ejs
 The relevant stylesheet is public.css
 All javascript files are in public/javascripts
 Stylesheets and javascript files are included in the head of index.ejs
+
+Notes: 
+I decided to turn this little project into a web app with just one page.  I wasn't sure when to query the search (user presses a search button?) so I made it like Google's instant-search :) 
 
 Since some queries may return many results, they're paginated like how Tumblr or Facebook does their lazy-loading.  Scroll down to the bottom and it'll automatically load the next batch of results.
 
@@ -20,4 +21,6 @@ twitter_instant.nodejitsu.com
 Also, all the source code is on github at:
 https://github.com/kenniyu/twitter_instant
 
-Thanks and happy instant-tweet-searching!
+Unfortunately I did not do any IE testing, so it probably does not look good on IE. Sorry!
+
+Enjoy, and happy instant-tweet-searching!
