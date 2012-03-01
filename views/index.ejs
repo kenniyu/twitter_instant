@@ -3,23 +3,264 @@
 <head>
 	<title>Twitter Instant</title>
 	<link rel='stylesheet' href='../stylesheets/public.css' />
+	<link rel='stylesheet' href='../stylesheets/tipsy.css' />
 	
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type=""></script>
 	<script src="../javascripts/waypoints.min.js"></script>
 	<script type="text/javascript" src="../javascripts/doT.js"></script>
+	<script type="text/javascript" src="../javascripts/jquery.tipsy.js"></script>
+	<script type="text/javascript" src="../javascripts/jquery.quicksand.js"></script>
+	
+
 	<script src="../javascripts/jquery.timeago.js" type="text/javascript"></script>
+
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.v2.js"></script>
 
 
 	<script type="text/javascript">
+		// helper methods:
+		
+		// global vars
 		var last_requested_term;
 		var running_request = false;
-		var rpp = 22;
+		var rpp = 100;
 		var current_page = 1;
 		var more_results = true;
 		var resultText;
+		var language_filter = "all";
+		
+		// data
+		var metadata_hash = {"popular": 0, "recent": 0};
+		var in_replies = 0;
+		var total_tweets = 0;
+		var iso_arr = [];
+		
+		// iso translations
+		var iso_translations = {
+			ab: "Abkhaz",
+			aa: "Afar",
+			af: "Afrikaans",
+			ak: "Akan",
+			sq: "Albanian",
+			am: "Amharic",
+			ar: "Arabic",
+			an: "Aragonese",
+			hy: "Armenian",
+			as: "Assamese",
+			av: "Avaric",
+			ae: "Avestan",
+			ay: "Aymara",
+			az: "Azerbaijani",
+			bm: "Bambara",
+			ba: "Bashkir",
+			eu: "Basque",
+			be: "Belarusian",
+			bn: "Bengali",
+			bh: "Bihari",
+			bi: "Bislama",
+			bjn: "Banjar",
+			bs: "Bosnian",
+			br: "Breton",
+			bg: "Bulgarian",
+			my: "Burmese",
+			ca: "Catalan",
+			ch: "Chamorro",
+			ce: "Chechen",
+			ny: "Chichewa",
+			zh: "Chinese",
+			cv: "Chuvash",
+			kw: "Cornish",
+			co: "Corsican",
+			cr: "Cree",
+			hr: "Croatian",
+			cs: "Czech",
+			da: "Danish",
+			day: "Dayak",
+			dv: "Divehi",
+			ni: "Dutch",
+			dz: "Dzongkha",
+			en: "English",
+			eo: "Esperanto",
+			et: "Estonian",
+			ee: "Ewe",
+			fo: "Faroese",
+			fj: "Fijian",
+			fi: "Finnish",
+			fr: "French",
+			ff: "Fula",
+			gl: "Galician",
+			ka: "Georgian",
+			de: "German",
+			el: "Greek",
+			gn: "Guarani",
+			gu: "Gujarati",
+			ht: "Haitian",
+			ha: "Hausa",
+			he: "Hebrew",
+			hz: "Herero",
+			hi: "Hindi",
+			ho: "Hiri Motu",
+			hu: "Hungarian",
+			ia: "Interlingua",
+			id: "Indonesian",
+			in: "Indonesian",
+			ie: "Interlingue",
+			ga: "Irish",
+			ig: "Igbo",
+			ik: "Inupiaq",
+			io: "Ido",
+			is: "Icelandic",
+			it: "Italian",
+			iu: "Inuktitut",
+			ja: "Japanese",
+			jv: "Javanese",
+			kl: "Kalaallisut",
+			kn: "Kannada",
+			kr: "Kanuri",
+			ks: "Kashmiri",
+			kk: "Kazakh",
+			km: "Khmer",
+			ki: "Kikuyu",
+			rw: "Kinyarwanda",
+			ky: "Kyrgyz",
+			kv: "Komi",
+			kg: "Kongo",
+			ko: "Korean",
+			ku: "Kurdish",
+			kj: "Kwanyama",
+			la: "Latin",
+			lb: "Luxembourgish",
+			lg: "Ganda",
+			li: "Limburgish",
+			ln: "Lingala",
+			lo: "Lao",
+			lt: "Lithuanian",
+			lu: "Luba-Katanga",
+			lv: "Latvian",
+			gv: "Manx",
+			mk: "Macedonian",
+			mg: "Malagasy",
+			ms: "Malay",
+			ml: "Malayalam",
+			mt: "Maltese",
+			mi: "Māori",
+			mr: "Marathi",
+			mh: "Marshallese",
+			mn: "Mongolian",
+			na: "Nauru",
+			nv: "Navajo",
+			nb: "Norwegian",
+			nd: "Ndebele",
+			ne: "Nepali",
+			ng: "Ndonga",
+			nl: "Dutch",
+			nn: "Norwegian",
+			no: "Norwegian",
+			ii: "Nuoso",
+			nr: "Ndebele",
+			oc: "Occitan",
+			oj: "Ojibwe",
+			cu: "Slavic",
+			om: "Oromo",
+			or: "Oriya",
+			os: "Ossetian",
+			pa: "Panjabi",
+			pi: "Pāli",
+			fa: "Persian",
+			pl: "Polish",
+			ps: "Pashto",
+			pt: "Portugese",
+			qu: "Quechua",
+			rm: "Romansh",
+			rn: "Kirundi",
+			ro: "Romanian",
+			ru: "Russian",
+			sa: "Sanskrit",
+			sc: "Sardinian",
+			sd: "Sindhi",
+			se: "Sami",
+			sm: "Somoan",
+			sg: "Sango",
+			sr: "Serbian",
+			gd: "Gaelic",
+			sn: "Shona",
+			si: "Sinhala",
+			sk: "Slovak",
+			sl: "Slovene",
+			so: "Somali",
+			st: "Sotho",
+			es: "Spanish",
+			su: "Sundanese",
+			sw: "Swahili",
+			ss: "Swati",
+			sv: "Swedish",
+			ta: "Tamil",
+			te: "Telugu",
+			tg: "Tajik",
+			th: "Thai",
+			ti: "Tigrinya",
+			bo: "Tibetan",
+			tk: "Turkmen",
+			tl: "Tagalog",
+			tn: "Tswana",
+			to: "Tonga",
+			tr: "Turkish",
+			ts: "Tsonga",
+			tt: "Tatar",
+			tw: "Twi",
+			ty: "Tahitian",
+			ug: "Uighur",
+			uk: "Ukrainian",
+			ur: "Urdu",
+			uz: "Uzbek",
+			ve: "Venda",
+			vi: "Vietnamese",
+			vo: "Volapük",
+			wa: "Walloon",
+			cy: "Welsh",
+			wo: "Wolof",
+			fy: "Frisian",
+			xh: "Xhosa",
+			yi: "Yiddish",
+			yo: "Yoruba",
+			za: "Zhuang",
+			zu: "Zulu"
+		}
 		
 		// our dot template function
-		var tempFn = doT.template("{{ for(var i=0; i < it.tweet_objs.length; i++) {	var tweet_obj = it.tweet_objs[i];	var text = tweet_linkify(tweet_obj.text); }} <div class='tweet-box' id='tweet-{{=tweet_obj.id}}'>	<div class='tweet-left'><img src='{{=tweet_obj.profile_image_url}}' width='100%'/></div>	<div class='tweet-right'> <div class='name'><span class='user'>{{=tweet_obj.from_user_name}}</span> <span class='username'>@{{=tweet_obj.from_user}}</span></div> <div class='text'>{{=text}}</div> <time class='timeago' title='{{=tweet_obj.created_at}}'>{{=jQuery.timeago(tweet_obj.created_at)}}</time> </div>	</div> {{ } }}");
+		var tempFn = doT.template("{{ for(var i=0; i < it.tweet_objs.length; i++) {	var tweet_obj = it.tweet_objs[i];	var text = tweet_linkify(tweet_obj.text); 	var result_type = tweet_obj.metadata.result_type;	metadata_hash[result_type] += 1;	var iso = tweet_obj.iso_language_code;	update_iso_arr(iso); 	if (tweet_obj.to_user != null) { in_replies++; } 	total_tweets += 1; 	}} <div class='tweet-box' id='tweet-{{=tweet_obj.id}}' data-iso-id='{{=iso}}'>	<div class='tweet-left'><img src='{{=tweet_obj.profile_image_url}}' width='100%'/></div>	<div class='tweet-right'> <div class='name'><span class='user'>{{=tweet_obj.from_user_name}}</span> <span class='username'>@{{=tweet_obj.from_user}}</span></div> <div class='text'>{{=text}}</div> <time class='timeago' title='{{=tweet_obj.created_at}}'>{{=jQuery.timeago(tweet_obj.created_at)}}</time> </div>	</div> {{ } }}");
+		
+		function get_language(iso_code) {
+			if (iso_translations[iso_code] == undefined)
+			 	return iso_code;
+			else
+				return iso_translations[iso_code];
+		}
+		
+		function reset_hashes() {
+			metadata_hash = {"popular": 0, "recent": 0};
+			in_replies = 0;
+			total_tweets = 0;
+			iso_arr = [];
+			data0 = [];
+			data1 = [];
+			language_filter = "all";
+		}
+		
+		function update_iso_arr(lang) {
+			var found = false;
+			for (var i = 0; i < iso_arr.length; i++) {
+				var element = iso_arr[i];
+				if (element.language == lang){
+					element.value += 1;
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				iso_arr.push({language: lang, value: 1});
+			}
+		}
 		
 		function tweet_linkify(text){
 			// linkifies @ and urls
@@ -32,10 +273,17 @@
 			return text;
 		}
 		
+		function get_values(hash) {
+			var arr = [];
+			for (var key in hash) {
+				arr.push(hash[key]);
+			}
+			return arr;
+		}
+		
 		function search_callback(data) {
 			running_request = false;	// set this to false to allow next instant search request
 			$('#search-activity').animate({"opacity": 0}, 400);	// hide activity indicators
-			$('.activity').animate({"opacity": 0}, 400);
 			var results = data.results;	// get results from twitter's returned data
 			var uniq_results = 0;
 			
@@ -66,6 +314,15 @@
 					resultText = tempFn({ tweet_objs: uniq_tweet_objs });
 					// append results to result list
 					$('#search-results-list').append(resultText);
+					
+					if (current_page == 1){
+						$('#search-results').animate({ scrollTop: 0 }, 1);
+						$('#search-results-list').hide().animate({ "height": "show", "opacity": 1 }, 400);
+						initialize_chart();
+					}
+					else {
+						redraw();
+					}
 					// refresh waypoint
 					$.waypoints('refresh');
 				}
@@ -76,14 +333,18 @@
 			}
 		}
 		
-		var search = function(search_term, page) {
+		var search = function(search_term) {
 			var esc_search_term = escape(search_term);
 			var eng_only = $('#filter-english:checked').length > 0;
 			var result_type = $('input:radio:checked').val();
-
-			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&result_type="+result_type+"&page="+page+"&rpp="+rpp;
-			request_url += (eng_only == true ? "&lang=en" : "");
-
+			
+			var request_url = "http://search.twitter.com/search.json?q="+esc_search_term+"&result_type="+result_type+"&page="+current_page+"&rpp="+rpp;
+			
+			if (language_filter != "all") {
+				request_url += "&lang="+language_filter;
+			}
+			console.log(request_url);
+			
 			
 			request = $.ajax({
 				url: request_url,
@@ -96,30 +357,35 @@
 						$('#search-activity').css("opacity", 1);
 						running_request = true;
 						last_requested_term = search_term;
+						$('#data-vis-blank').slideUp();
 					}
 				},
 				dataType: "jsonp",
 				jsonpCallback: "search_callback",
-				type: "GET"
+				type: "GET",
+				complete: function(jqXHR, status){
+					console.log(status)
+				}
 			});
 		}
 		
 		var initWaypoints = function(){
 			$('.load-more').waypoint(function(event, direction){
-				if (direction === 'down' && $('#search-results-list').children().length != 0 && more_results && $('#search-input').val().trim().length > 1) {
-					$(this).find('.activity').css("opacity", 1);
+				if (direction === 'down' && $('#search-results-list').children().length != 0 && more_results && $('#search-input').val().trim().length > 1 && language_filter == "all") {
 					// do this on the way down
 					current_page++;
 					var search_term = $('#search-input').val().trim();
-					search(search_term, current_page);
+					search(search_term);
 				}
 			}, {
-				offset: '100%'
+				offset: '200%',
+				context: '#search-results'
 			});
-			
 		}
 		
 		$().ready(function() {
+			reset_hashes(); 
+			
 			$('body').live("click", function(e){
 				var target_id = e.target.id;
 				if (target_id != "dropdown-icon" && $(e.target).closest('#search-dropdown').length == 0) {
@@ -128,53 +394,37 @@
 				}
 			});
 			
-			$(window).scroll(function(){
-				if ($(window).scrollTop() > 2000){	
-					if ($('#back-to-top').is(":hidden")) {
-						$('#back-to-top').slideDown();
-					}
-				}
-				else {
-					$('#back-to-top').slideUp();
-				}
-			});
-			
-			$('#back-to-top').live("click", function(e){
-				$('body,html').animate({ scrollTop: 0 }, 800);
-			});
-			
 			$('#search-input').live("keyup", function(){
 				var search_term = $(this).val().trim();
 				if (search_term != last_requested_term){
 					current_page = 1;
+					// reset hashes
+					reset_hashes();
 					more_results = true;
-					search(search_term, current_page);
+					search(search_term);
 				}
 			});
-			
 			
 			$('.options-list li').live("click", function(e){
 				var search_term = $('#search-input').val().trim();
 				current_page = 1;
 				more_results = true;
 				setTimeout(function(){
-					search(search_term, current_page);
+					reset_hashes();
+					search(search_term);
 				}, 50);
 			});
 			
 			// why doesn't this auto update the time tags... :(
 			jQuery("time.timeago").timeago();
 		  	
-			
 			$('#dropdown-icon').live("click", function(e){
 				$('#search-dropdown').slideToggle(100);
 				$(this).toggleClass("active");
 			});
 			initWaypoints();
 		});
-	
 	</script>
-	
 </head>
 
 <body>
@@ -202,12 +452,6 @@
 						
 						<li>
 							<label style="display:block">
-								<input type="checkbox" id="filter-english"/> English
-							</label>
-						</li>
-						<hr style="width: 80%"/>
-						<li>
-							<label style="display:block">
 								<input type="radio" name="filter-result-type" value="mixed" checked="checked"/> All 
 							</label>
 						</li>
@@ -226,19 +470,421 @@
 			</div>
 		</div>
 		
-		<div id="search-results">
-			<div id="search-results-list"></div>
-			<div class="load-more">
-				<div class="activity">
-					<img src="../images/activity.gif"/>
+		
+		<div id="search-inner-wrapper">
+			<div id="search-results">
+				<div id="search-results-list">
+					Search for something...
+				</div>
+				<div class="load-more"></div>
+			</div>
+		
+			<div id="data-vis">
+				<div id="data-vis-blank">
+					...and see cool stuff
+				</div>
+				
+				<div class="data-block">
+					<span id="data-iso"></span>
 				</div>
 			</div>
 		</div>
-		
-		<div id="back-to-top">^</div>
-		
 	</div>
+	
+	<script type="text/javascript">
+	// datavis
+	
+	function iso_filter(language) {
+		// show all tweets		
+		
+		if (!(language == "all" && language_filter == "all")) {
+			$('#search-results').animate({ scrollTop: 0 }, 1);
+		}
+		
+		if (language == "all") {
+			$tweets_to_show = $('.tweet-box:hidden');
+			$tweets_to_show.show();
+			// $.each($tweets_to_show, function(index, item) {
+			// 	setTimeout(function() {
+			// 		$(item).slideDown(5);
+			// 	}, 20*index)
+			// });
+		}
+		else {
+			$tweets_to_show = $('.tweet-box:hidden[data-iso-id='+language+']');
+			$tweets_to_show.show();
+			// $.each($tweets_to_show, function(index, item) {
+			// 	setTimeout(function() {
+			// 		$(item).slideDown(5);
+			// 	}, 20*index)
+			// });
+			
+			$tweets_to_hide = $('.tweet-box:visible').not('[data-iso-id='+language+']');
+			$tweets_to_hide.hide();
+			// $.each($tweets_to_hide, function(index, item) {
+			// 	setTimeout(function(){
+			// 		$(item).slideUp(5);		
+			// 	}, 20*index);
+			// });
+		}
+		language_filter = language;
+		$.waypoints('refresh');
+	}
+	
+	var w = 500,
+	    h = 550,
+		rect_left_offset = 80,
+		rect_right_offset = 60,
+	    r1 = (Math.min(w, h) - 140) / 2,
+	    r0 = r1 * .55,
+	    q = 0,
+	    data,
+	    color = d3.scale.category20(),
+	    arc = d3.svg.arc(),
+	    donut = d3.layout.pie().sort(null);
+	
 
+	var chart;
+	
+	function redraw() {
+		data = iso_arr;
+		
+		// rectangles
+		var rect = chart.selectAll("rect")
+		.data(data);
+		
+		rect.enter().insert("rect", "line")
+		.attr("x", function(d, i) { return rect_left_offset; })
+		.attr("y", function(d, i) { return setTop("rect", i); })
+		.attr("width", function(d, i) { 
+			return 0;
+		})
+		.attr("height", 15)
+		.attr("fill", function(d, i) { return color(i); })
+		.attr('data-iso', function(d) { return d.language; })
+		.attr('data-color', function(d, i) { return color(i); })
+		.attr('onmouseover', "return hover($(this).attr('data-iso'));")
+		.attr('onmouseout', "return unhover($(this).attr('data-iso'));")
+		.attr('style', "cursor:pointer;")
+		.on('click', function(d, i) { return iso_filter(d.language); })
+		.transition()
+		.duration(500)
+		.attr("width", function(d) { return setWidth(d); });
+		
+		rect.transition()
+		.duration(500)
+		.attr("width", function(d) { return setWidth(d); });
+		
+		rect.exit().transition()
+		.duration(500)
+		.attr("width", function(d, i) { return 0; })
+		.remove();
+		
+		chart.selectAll("rect")
+			.append("svg:title")
+			.text(function(d) { return get_language(d.language) + " ("+(d.value/getIsoSum()*100).toFixed(1)+"%)"; });
+		
+		// labels
+		var label = chart.selectAll("text.iso-label")
+		.data(data);
+		
+		label.enter().insert("text", "line")
+			.attr("class", "iso-label")
+			.attr("x", function(d) { return 0; })
+			.attr("y", function(d, i) { return setTop("text", i); })
+			.attr("dx", function(d) { return -5; })
+			.attr("style", "font-size: 12px;")
+			.attr("text-anchor", "end")
+			.attr("fill", function(d, i) { return d3.rgb(color(i)).darker(2); })
+			.text(function(d) { return get_language(d.language); })
+			.transition()
+			.duration(500)
+			.attr("x", rect_left_offset);
+		
+		label.exit().transition()
+			.duration(500)
+			.attr("x", function(d) { return -50; })
+			.remove();
+			
+		// numbers 
+		var number = chart.selectAll("text.number")
+			.data(data);
+			
+		number.enter().insert("text", "line")
+			.attr("class", "number")
+			.attr("style", "font-size: 11px;")
+			.attr("fill", function(d, i) { return d3.rgb(color(i)).darker(1.4); })
+			.attr("x", 500)
+			.attr("y", function(d, i) { return setTop("text", i); })
+			.attr("dx", 80 + 5)
+			.text(function(d) { return (d.value/getIsoSum()*100).toFixed(1)+"%"; })
+			.transition().duration(500)
+			.attr("x", function(d) { return setWidth(d); });
+		
+		number
+			.text(function(d) { return (d.value/getIsoSum()*100).toFixed(1)+"%"; })
+			.transition().duration(500)
+			.attr("x", function(d) { return setWidth(d); });
+								
+		number.exit().transition()
+			.duration(500)
+			.attr("x", function(d) { return 500; })
+			.remove();
+			
+	}
+	
+	function setWidth(data) {
+		var available_bar_width = w - rect_left_offset - rect_right_offset;
+		var width = available_bar_width * data.value / getIsoSum(); 
+		if (width < 2) {
+			return 2;
+		}
+		return width;
+	}
+	
+	function setTop(type, index) {
+		var offset_top = 50;
+		if (type == "rect") {
+			return 5 + index * 20 + offset_top;
+		}
+		else {
+			return 17 + index * 20 + offset_top;
+		}
+	}
+	
+	function getIsoSum() {
+		var sum = 0;
+		for (var i = 0; i < iso_arr.length; i++) {
+			var element = iso_arr[i];
+			sum += element.value;
+		}
+		return sum;
+	}
+	
+	function initialize_chart() {
+				
+		$('#data-iso').empty();
+		
+		data = iso_arr;
+		
+		chart = d3.select("#data-iso").append("svg")
+			.attr("class", "chart")
+			.attr("width", w)
+			.attr("height", h);
+		
+		var rect = chart.selectAll("rect")
+			.data(data)
+			.enter().append("rect")
+			.attr("x", function(d, i) { return rect_left_offset; })
+			.attr("y", function(d, i) { return setTop("rect", i) })
+			.attr("width", function(d, i) { return 0; })
+			.attr('data-iso', function(d) { return d.language; })
+			.attr('data-color', function(d, i) { return color(i); })
+			.attr('onmouseover', "return hover($(this).attr('data-iso'));")
+			.attr('onmouseout', "return unhover($(this).attr('data-iso'));")
+			.attr('style', "cursor:pointer;")
+			.attr("height", 15)
+			.attr("fill", function(d, i) { return color(i); })
+			.on('click', function(d, i) { return iso_filter(d.language); })
+			.transition()
+			.duration(500)
+			.delay(function(d, i) { return i*100; })
+			.attr("width", function(d) { return setWidth(d); });
+		chart.selectAll("rect")
+			.append("svg:title")
+			.text(function(d) { return get_language(d.language) + " ("+(d.value/getIsoSum()*100).toFixed(1)+"%)"; });
+			
+		var label = chart.selectAll("text.iso-label")
+			.data(data)
+			.enter().append("text")
+			.attr("class", "iso-label")
+			.attr("x", function(d) { return 0; })
+			.attr("y", function(d, i) { return setTop("text", i) })
+			.attr("dx", function(d) { return -5; })
+			.attr("style", "font-size: 12px;")
+			.attr("text-anchor", "end")
+			.attr("fill", function(d, i) { return d3.rgb(color(i)).darker(2); })
+			.text(function(d) { return get_language(d.language); })
+			.transition()
+			.duration(500)
+			.delay(function(d, i) { return i*100; })
+			.attr("x", rect_left_offset);
+			
+		var number = chart.selectAll("text.number")
+			.data(data)
+			.enter().append("text")
+			.attr("class", "number")
+			.attr("fill", function(d, i) { return d3.rgb(color(i)).darker(1.4); })
+			.attr("style", "font-size: 11px;")
+			.attr("x", 500)
+			.attr("y", function(d, i) { return setTop("text", i); })
+			.attr("dx", 80 + 3)
+			.text(function(d) { return (d.value/getIsoSum()*100).toFixed(1)+"%"; })
+			.transition().duration(500)
+			.delay(function(d, i) { return i*100; })
+			.attr("x", function(d) { return setWidth(d); });
+	     
+		var title = chart.append("svg:text")
+			.attr("class", "chart-title")
+			.attr("x", function(d) { return 200; })
+			.attr("y", function(d) { return 20; })
+			.text("Tweet Languages");
+			
+		var all_filter = chart.append("svg:text")
+			.attr("class", "chart-all-filter")
+			.attr("x", 235)
+			.attr("y", 40)
+			.attr("fill", "#000088")
+			.attr('style', "cursor:pointer; font-size: 11px;")
+			.on("click", function(){ return iso_filter("all"); })
+			.text("Show All");
+			
+			
+		// old_iso_keys = get_keys(iso_hash);
+		
+		// vis.selectAll("g.arc")
+		//     .data(arcs(data0, data1))
+		//   .enter().append("g")
+		//     .attr("class", "arc")
+		//     .attr("transform", "translate("+r1+", "+(r1+30)+")")
+		// 	.attr('data-iso', function(d, i) { return old_iso_keys[i]; })
+		// 	.attr('data-color', function(d, i) { return color(i); })
+		// 	.attr('style', "cursor:pointer;")
+		// 	.attr('onmouseover', "return hover($(this).attr('data-iso'));")
+		// 	.attr('onmouseout', "return unhover($(this).attr('data-iso'));")
+		// 	.attr('title', function(d, i) { return old_iso_keys[i]; })
+		//   .append("path")
+		//     .attr("fill", function(d, i) { return color(i); })
+		//     .attr("d", arc);
+		// 
+		// vis.selectAll("g.arc")
+		// 	.append("svg:title") 
+		//   	.text(function(d, i) { return old_iso_keys[i]; });
+		
+		// label = vis.append("svg:text")
+		// 	      .attr("dx", function(d) { return 125; })
+		// 	      .attr("dy", function(d) { return 20; })
+		// 	      .text("Tweet Origins");
+			
+		// legend = vis.selectAll("g.rect")
+		// 	.data(data0)
+		// 	.enter().append("rect")
+		// 	.attr("x", function(d, i) { return 225; })
+		// 	.attr("y", function(d, i) { return 35 + 20*i; })
+		// 	.attr("width", 10)
+		// 	.attr("height", 10)
+		// 	.attr("fill", function(d, i) { return color(i); });
+		
+		// var legend_row = vis.selectAll("g.legend_row")
+		// 	.data(data0)
+		// 	.enter().append("svg:g");
+		// 
+		// legend_row.append("rect")
+		// 	.attr("x", function(d, i) { return 225; })
+		// 	.attr("y", function(d, i) { return 35 + 20*i; })
+		// 	.attr("width", 10)
+		// 	.attr("height", 10)
+		// 	.attr("fill", function(d, i) { return color(i); });
+		// 					
+		// legend_row.append("svg:text")
+		// 	.text(function(d, i) { return d; })
+		// 	.attr("fill", function(d, i) { return "#454545"; })
+		// 	.attr("style", "font-size: 12px;")
+		// 	.attr("dx", function(d, i) { return 245; })
+		// 	.attr("dy", function(d, i) { return 44 + 20*i; });
+		
+	}
+
+	function arcs(data0, data1) {
+		var arcs0 = donut(data0),
+			arcs1 = donut(data1),
+			i = -1,
+			arc;
+		while (++i < data0.length) {
+			arc = arcs0[i];
+			arc.innerRadius = r0;
+			arc.outerRadius = r1;
+			arc.next = arcs1[i];
+		}
+		return arcs0;
+	}
+
+	function swap() {
+		// get new iso values
+		var tempNewData = get_values(iso_hash);
+		
+		if (tempNewData.length > data0.length) {
+			// find the new keys, with keys to add in keys_to_add
+			var new_iso_keys = get_keys(iso_hash);
+			var keys_to_add = [];
+			for (var i = 0; i < new_iso_keys.length; i++) {
+				var key_i = new_iso_keys[i];
+				if (old_iso_keys.indexOf(key_i) == -1) {
+					data0.push(0);
+				}
+			}
+			// create temp old hash
+			// var tempHash = {};
+			// for (var key in iso_hash) {
+			// 	tempHash[key] = iso_hash[key];
+			// 	if (key in keys_to_add) {
+			// 		tempHash[key] = 0;
+			// 	}
+			// }
+			// data0 = get_values(tempHash);
+			initialize_chart(data0, data0);
+		}
+		// chart must be valid at this point
+		
+		// get new data
+		data1 = get_values(iso_hash);
+		
+		d3.selectAll("g.arc > path")
+	      .data(arcs(data0, data1))
+	      .each(transitionResize);
+		// update data0 to reflect data1
+		data0 = data1;
+	}
+
+	function hover(label) {
+		$('rect[data-iso='+label+']').attr('fill', '#f0faff');
+		d3.select('rect[data-iso='+label+']').style('stroke-width', '1px;').style('stroke', '#454545');
+		
+	}
+	
+	function unhover(label) {
+		$('rect[data-iso='+label+']').attr('fill', $('rect[data-iso='+label+']').attr('data-color'));
+		d3.select('rect[data-iso='+label+']').style('stroke-width', '0px;').style("stroke", "transparent");
+	}
+	
+	// Wedges update their values, changing size.
+	function transitionResize(d, i) {
+		d3.select(this)
+		.transition().duration(500)
+		.attrTween("d", tweenArc({
+			startAngle: d.next.startAngle,
+			endAngle: d.next.endAngle
+			}));
+	}
+
+	function tweenArc(b) {
+		return function(a) {
+			var i = d3.interpolate(a, b);
+			for (var key in b) a[key] = b[key]; // update data
+			return function(t) {
+				return arc(i(t));
+			};
+		};
+	}
+	
+	function get_keys(hash) {
+		keys = [];
+		for (var key in hash) {
+			keys.push(key);
+		}
+		return keys
+	}
+	</script>
 </body>
 
 </html>

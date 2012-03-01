@@ -23,7 +23,8 @@ a:hover {
 #search-wrapper {
 	width: 80%;
 	margin: auto;
-	min-width: 500px;
+	min-width: 1010px;
+/*	border: 1px solid black;*/
 }
 
 #search-heading {
@@ -95,9 +96,7 @@ a:hover {
 }
 
 .tweet-box {
-	border-top: 1px solid #bababa;
-	border-right: 1px solid #bababa;
-	border-left: 1px solid #bababa;
+	text-align: left;
 	margin: auto;
 	padding: 10px;
 	background-color: #ffffff;
@@ -106,10 +105,6 @@ a:hover {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr=#ececec, endColorStr=#fafafa);
 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#ececec, endColorstr=#fafafa)";
 	word-wrap: break-word;
-}
-
-.tweet-box:nth-last-child(1) {
-	border-bottom: 1px solid #bababa;
 }
 
 .tweet-box:hover {
@@ -162,10 +157,8 @@ a:hover {
 	text-align: center;
 }
 
-.load-more .activity {
+#results-activity {
 	display: inline-block;
-	opacity: 0;
-	padding: 10px 0px;
 }
 
 #search-icon {
@@ -181,9 +174,36 @@ a:hover {
 	padding: 5px 0 0 0;
 }
 
+#search-inner-wrapper {
+	width: 100%;
+	text-align: center;
+/*	border: 1px solid black;*/
+}
+
 #search-results {
 	max-width: 500px;
-	margin: auto;
+	min-width: 500px;
+	height:80%; 
+	overflow: auto;
+/*	border-top: 1px solid #bababa;
+	border-left: 1px solid #bababa;
+	border-bottom: 1px solid #bababa;*/	
+	display: inline-block;
+	vertical-align: text-bottom;
+	
+}
+
+#data-vis {
+	max-width: 500px;
+	min-width: 500px;
+	height:80%; 
+	overflow: auto;
+/*	border-top: 1px solid #bababa;
+	border-right: 1px solid #bababa;
+	border-bottom: 1px solid #bababa;*/
+	display: inline-block;
+	vertical-align: text-bottom;
+	
 }
 
 #dropdown-icon {
@@ -248,29 +268,23 @@ ul {
 	margin: 0px;
 }
 
-#back-to-top {
-	position: fixed;
-	top: 0px;
-	right: 10%;
-	
-	background-color: rgba(0,0,0,0.15);
-	
-	-webkit-border-bottom-right-radius: 5px;
-	-moz-border-bottom-right-radius: 5px;
-	border-bottom-right-radius: 5px;
-	
-	-webkit-border-bottom-left-radius: 5px;
-	-moz-border-bottom-left-radius: 5px;
-	border-bottom-left-radius: 5px;
-	
-	color: white;
-	display: none;
-	padding: 5px 10px;
-	font-weight: bold;
-	cursor: pointer;
-}
 
 #back-to-top:hover {
 	color: navy;
 	background-color: rgba(0,0,0,0.2);
+}
+
+/*data vis stuff*/
+
+#data-vis .data-block {
+/*	border: 1px solid black;*/
+	width: 100%;
+	height: 80%;
+	margin: auto;
+}
+
+.chart .chart-title {
+	font: 14px;
+	text-align: right;
+	color: white;
 }
